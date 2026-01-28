@@ -10,5 +10,5 @@ TO RUN: OPEN A VIRTUAL MACHINE AND GIVE COMMAND:
     ./funny_desktop_hijack.sh
 
 TO STOP THE “MALWARE”
-pkill oneko xpenguins xeyes
+    pkill oneko xpenguins xeyes
 
