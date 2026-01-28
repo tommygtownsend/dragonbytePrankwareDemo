@@ -1,57 +1,46 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -e
 
-# Prank/demo launcher (SAFE): xpenguins + xeyes + hollywood + clearly-labeled zenity demo popup
-# Tested for Debian/Ubuntu/Kali-ish systems using apt.
+echo "[*] Starting Kali demo..."
 
-need_cmd() { command -v "$1" >/dev/null 2>&1; }
-
-if ! need_cmd apt-get; then
-  echo "This script currently supports apt-based distros (Ubuntu/Debian/Kali)."
+# Require GUI
+if [[ -z "$DISPLAY" ]]; then
+  echo "[!] No GUI session detected. Run this from Kali Desktop."
   exit 1
 fi
 
-echo "[*] Updating package lists..."
-sudo apt-get update -y
+echo "[*] Updating repos..."
+sudo apt update -y
 
-echo "[*] Installing packages..."
-# xeyes typically comes from x11-apps
-sudo apt-get install -y xpenguins x11-apps zenity hollywood
+echo "[*] Installing required packages..."
+sudo apt install -y \
+  xpenguins \
+  x11-apps \
+  hollywood \
+  zenity
 
-# Basic "are we in a graphical session?" check.
-if [[ -z "${DISPLAY:-}" ]]; then
-  echo "[!] DISPLAY is not set. You need to run this inside an X/GUI session (or forwarded X)."
-  echo "    Example: run from your desktop terminal, not a pure TTY."
-  exit 1
-fi
+echo "[*] Launching demo payloads..."
 
-echo "[*] Launching everything..."
-
-# 1) xpenguins (little penguins walking around)
-# Some distros provide `xpenguins` directly. If not, try `xpenguins -display :0`.
+# Penguins everywhere
 (xpenguins >/dev/null 2>&1 &)
 
-# 2) xeyes (eyes follow your cursor)
+# Eyes follow cursor
 (xeyes >/dev/null 2>&1 &)
 
-# 3) hollywood (terminal "hacker" screens)
-# Launch in a new terminal if we can; otherwise run in current terminal.
-if need_cmd gnome-terminal; then
-  (gnome-terminal -- bash -lc 'hollywood; exec bash' >/dev/null 2>&1 &)
-elif need_cmd xterm; then
-  (xterm -e bash -lc 'hollywood; exec bash' >/dev/null 2>&1 &)
-elif need_cmd konsole; then
-  (konsole -e bash -lc 'hollywood; exec bash' >/dev/null 2>&1 &)
+# Hollywood hacker terminal
+if command -v gnome-terminal >/dev/null; then
+  gnome-terminal -- bash -lc "hollywood; exec bash" &
+elif command -v xterm >/dev/null; then
+  xterm -e hollywood &
 else
-  echo "[!] No gnome-terminal/xterm/konsole found; running hollywood in THIS terminal."
-  hollywood
+  hollywood &
 fi
 
-# 4) Zenity popup (explicitly NOT pretending to be real ransomware)
-(zenity --warning \
-  --title="TRAINING DEMO (NOT REAL)" \
+# Zenity "panicware" popup (clearly labeled)
+zenity --warning \
+  --title="⚠️ MALWARE ANALYSIS DEMO ⚠️" \
   --width=420 \
-  --text=$'This is a *classroom demo* popup.\n\n✅ NOT ransomware\n✅ No files are touched\n✅ Close this window to continue' \
-  >/dev/null 2>&1 &)
+  --text=$'This is a **SAFE CLASSROOM DEMO**.\n\n• No files modified\n• No persistence\n• Snapshot revert to recover\n\nClose to continue.' &
 
-echo "[*] Done. Close the popup when you’re ready."
+echo "[*] All components running."
+echo "[*] Snapshot → chaos → revert."
