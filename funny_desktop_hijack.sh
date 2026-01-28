@@ -9,8 +9,19 @@ if [[ -z "$DISPLAY" ]]; then
   exit 1
 fi
 
-echo "[*] Updating repos..."
+# ---- APT FIX BLOCK (added) ----
+sudo apt clean
 sudo apt update -y
+
+# fix missing Kali repo signing keys
+sudo apt install -y kali-archive-keyring
+
+# refresh indexes again (should remove NO_PUBKEY)
+sudo apt update -y
+
+# (optional but recommended) bring system in sync so installs don't 404
+sudo apt -y full-upgrade
+# ---- END APT FIX BLOCK ----
 
 echo "[*] Installing required packages..."
 sudo apt install -y \
@@ -36,10 +47,15 @@ else
   hollywood &
 fi
 
-# Zenity "panicware" popup (clearly labeled)
+# Zenity popup
 zenity --warning \
   --title="⚠️ MALWARE ANALYSIS DEMO ⚠️" \
   --width=420 \
+  --text=$'This is a **SAFE CLASSROOM DEMO**.\n\n• No files modified\n• No persistence\n• Snapshot revert to recover\n\nClose to continue.' &
+
+echo "[*] All components running."
+echo "[*] Snapshot → chaos → revert."
+
   --text=$'This is a **SAFE CLASSROOM DEMO**.\n\n• No files modified\n• No persistence\n• Snapshot revert to recover\n\nClose to continue.' &
 
 echo "[*] All components running."
