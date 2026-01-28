@@ -1,36 +1,21 @@
 #!/usr/bin/env bash
 set -e
 
-echo "[*] Starting Kali demo..."
+echo "[*] Installing xpenguins..."
+sudo apt install -y xpenguins
 
-# Require GUI session
-if [[ -z "$DISPLAY" ]]; then
-  echo "[!] No GUI session detected. Run this from Kali Desktop."
-  exit 1
-fi
+echo "[*] Installing cmatrix..."
+sudo apt install -y cmatrix
 
-echo "[*] Cleaning and fixing apt..."
-sudo apt clean
-sudo apt update -y
-sudo apt install -y kali-archive-keyring
-sudo apt update -y
+echo "[*] Installing zenity..."
+sudo apt install -y zenity
 
-echo "[*] Installing required packages..."
-sudo apt install -y \
-  xpenguins \
-  x11-apps \
-  cmatrix \
-  zenity
+echo "[*] Launching programs simultaneously..."
 
-echo "[*] Launching demo payloads..."
+# xpenguins (default behavior)
+xpenguins >/dev/null 2>&1 &
 
-# MAX penguins (adjust -n higher/lower if needed)
-xpenguins -n 150 --ignore-workspace >/dev/null 2>&1 &
-
-# Creepy eyes follow cursor
-xeyes >/dev/null 2>&1 &
-
-# Matrix terminal chaos
+# cmatrix (in a terminal if possible)
 if command -v gnome-terminal >/dev/null 2>&1; then
   gnome-terminal -- bash -lc "cmatrix; exec bash" &
 elif command -v xterm >/dev/null 2>&1; then
@@ -39,11 +24,10 @@ else
   cmatrix &
 fi
 
-# Clearly labeled warning popup
+# zenity warning popup
 zenity --warning \
-  --title="⚠️ MALWARE ANALYSIS DEMO ⚠️" \
-  --width=450 \
-  --text=$'This is a **SAFE CLASSROOM DEMO**.\n\n• No files modified\n• No persistence\n• No real malware\n\nPurpose:\n• Visual chaos\n• User panic simulation\n• Snapshot rollback demo\n\nClose this window to continue.' &
+  --title="⚠️ DEMO WARNING ⚠️" \
+  --width=420 \
+  --text="This is a SAFE classroom demo.\n\nNo files modified.\nNo persistence.\n\nClose to continue." &
 
-echo "[*] All components launched."
-echo "[*] Snapshot → chaos → revert."
+echo "[*] Done."
