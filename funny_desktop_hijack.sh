@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-echo "[*] Starting Kali demo..."
+echo "[*] Starting Kali penguin demo..."
 
 # Require GUI
 if [[ -z "$DISPLAY" ]]; then
@@ -9,52 +9,34 @@ if [[ -z "$DISPLAY" ]]; then
   exit 1
 fi
 
-# ---- APT FIX BLOCK (added) ----
+echo "[*] Cleaning + fixing apt (safe for Kali)..."
 sudo apt clean
 sudo apt update -y
-
-# fix missing Kali repo signing keys
 sudo apt install -y kali-archive-keyring
-
-# refresh indexes again (should remove NO_PUBKEY)
 sudo apt update -y
 
-# (optional but recommended) bring system in sync so installs don't 404
-sudo apt -y full-upgrade
-# ---- END APT FIX BLOCK ----
-
 echo "[*] Installing required packages..."
-sudo apt install -y \
-  xpenguins \
-  x11-apps \
-  hollywood \
-  zenity
+sudo apt install -y xpenguins hollywood
 
-echo "[*] Launching demo payloads..."
+echo "[*] Launching MAXIMUM penguins..."
 
-# Penguins everywhere
-(xpenguins >/dev/null 2>&1 &)
+# xpenguins:
+# -n = number of penguins (there is no hard "max", but 100–200 is chaos without freezing most VMs)
+# --ignore-workspace keeps them everywhere
+xpenguins -n 150 --ignore-workspace >/dev/null 2>&1 &
 
-# Eyes follow cursor
-(xeyes >/dev/null 2>&1 &)
+echo "[*] Launching hollywood..."
 
-# Hollywood hacker terminal
-if command -v gnome-terminal >/dev/null; then
+if command -v gnome-terminal >/dev/null 2>&1; then
   gnome-terminal -- bash -lc "hollywood; exec bash" &
-elif command -v xterm >/dev/null; then
+elif command -v xterm >/dev/null 2>&1; then
   xterm -e hollywood &
 else
   hollywood &
 fi
 
-# Zenity popup
-zenity --warning \
-  --title="⚠️ MALWARE ANALYSIS DEMO ⚠️" \
-  --width=420 \
-  --text=$'This is a **SAFE CLASSROOM DEMO**.\n\n• No files modified\n• No persistence\n• Snapshot revert to recover\n\nClose to continue.' &
-
-echo "[*] All components running."
-echo "[*] Snapshot → chaos → revert."
+echo "[*] Demo running."
+echo "[*] Expect penguin overload + hacker-movie nonsense."
 
   --text=$'This is a **SAFE CLASSROOM DEMO**.\n\n• No files modified\n• No persistence\n• Snapshot revert to recover\n\nClose to continue.' &
 
