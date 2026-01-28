@@ -1,89 +1,57 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-echo "=== Linux Desktop Hijack Demo (Harmless) ==="
-echo "This script installs and runs humorous desktop pranks."
-echo "Use ONLY inside a VM."
-echo
+# Prank/demo launcher (SAFE): xpenguins + xeyes + hollywood + clearly-labeled zenity demo popup
+# Tested for Debian/Ubuntu/Kali-ish systems using apt.
 
-# Detect package manager
-if command -v apt >/dev/null 2>&1; then
-    PKG_INSTALL="sudo apt install -y"
-    PKG_UPDATE="sudo apt update"
-elif command -v dnf >/dev/null 2>&1; then
-    PKG_INSTALL="sudo dnf install -y"
-    PKG_UPDATE="sudo dnf check-update"
-else
-    echo "Unsupported package manager."
-    exit 1
+need_cmd() { command -v "$1" >/dev/null 2>&1; }
+
+if ! need_cmd apt-get; then
+  echo "This script currently supports apt-based distros (Ubuntu/Debian/Kali)."
+  exit 1
 fi
 
-echo "[*] Updating package list..."
-$PKG_UPDATE
+echo "[*] Updating package lists..."
+sudo apt-get update -y
 
-echo "[*] Installing prank tools..."
-$PKG_INSTALL oneko xpenguins xdotool wmctrl x11-apps zenity cmatrix
+echo "[*] Installing packages..."
+# xeyes typically comes from x11-apps
+sudo apt-get install -y xpenguins x11-apps zenity hollywood
 
-echo
-echo "=== Choose a prank to run ==="
-echo "1) oneko (desktop cat chases mouse)"
-echo "2) xpenguins (penguins everywhere)"
-echo "3) xeyes (eyes follow cursor)"
-echo "4) cmatrix (Hollywood hacker terminal)"
-echo "5) Mouse hijack (cursor moves on its own)"
-echo "6) Fake ransomware popup"
-echo "7) RUN ALL (maximum chaos)"
-echo "0) Exit"
-echo
+# Basic "are we in a graphical session?" check.
+if [[ -z "${DISPLAY:-}" ]]; then
+  echo "[!] DISPLAY is not set. You need to run this inside an X/GUI session (or forwarded X)."
+  echo "    Example: run from your desktop terminal, not a pure TTY."
+  exit 1
+fi
 
-read -p "Enter choice: " CHOICE
+echo "[*] Launching everything..."
 
-case $CHOICE in
-  1)
-    oneko &
-    ;;
-  2)
-    xpenguins --transparent &
-    ;;
-  3)
-    xeyes &
-    ;;
-  4)
-    cmatrix
-    ;;
-  5)
-    echo "[!] Press CTRL+C to stop the mouse hijack"
-    while true; do
-      xdotool mousemove_relative -- 30 0
-      sleep 0.3
-      xdotool mousemove_relative -- -30 0
-      sleep 0.3
-    done
-    ;;
-  6)
-    zenity --error \
-      --title="SYSTEM COMPROMISED" \
-      --text="Your files have been encrypted.\n\nSend 1 BTC to recover them."
-    ;;
-  7)
-    oneko &
-    xpenguins --transparent &
-    xeyes &
-    zenity --warning \
-      --title="Warning" \
-      --text="Unusual activity detected."
-    ;;
-  0)
-    echo "Exiting."
-    exit 0
-    ;;
-  *)
-    echo "Invalid option."
-    ;;
-esac
+# 1) xpenguins (little penguins walking around)
+# Some distros provide `xpenguins` directly. If not, try `xpenguins -display :0`.
+(xpenguins >/dev/null 2>&1 &)
 
-echo
-echo "=== Demo running ==="
-echo "To stop:"
-echo "• Close the terminal"
-echo "• Or pkill oneko xpenguins xeyes"
-echo "• Or revert VM snapshot"
+# 2) xeyes (eyes follow your cursor)
+(xeyes >/dev/null 2>&1 &)
+
+# 3) hollywood (terminal "hacker" screens)
+# Launch in a new terminal if we can; otherwise run in current terminal.
+if need_cmd gnome-terminal; then
+  (gnome-terminal -- bash -lc 'hollywood; exec bash' >/dev/null 2>&1 &)
+elif need_cmd xterm; then
+  (xterm -e bash -lc 'hollywood; exec bash' >/dev/null 2>&1 &)
+elif need_cmd konsole; then
+  (konsole -e bash -lc 'hollywood; exec bash' >/dev/null 2>&1 &)
+else
+  echo "[!] No gnome-terminal/xterm/konsole found; running hollywood in THIS terminal."
+  hollywood
+fi
+
+# 4) Zenity popup (explicitly NOT pretending to be real ransomware)
+(zenity --warning \
+  --title="TRAINING DEMO (NOT REAL)" \
+  --width=420 \
+  --text=$'This is a *classroom demo* popup.\n\n✅ NOT ransomware\n✅ No files are touched\n✅ Close this window to continue' \
+  >/dev/null 2>&1 &)
+
+echo "[*] Done. Close the popup when you’re ready."
