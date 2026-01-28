@@ -42,7 +42,7 @@ case $CHOICE in
     oneko &
     ;;
   2)
-    xpenguins &
+    xpenguins --transparent &
     ;;
   3)
     xeyes &
@@ -66,7 +66,7 @@ case $CHOICE in
     ;;
   7)
     oneko &
-    xpenguins &
+    xpenguins --transparent &
     xeyes &
     zenity --warning \
       --title="Warning" \
