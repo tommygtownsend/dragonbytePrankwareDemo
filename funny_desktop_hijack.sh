@@ -7,24 +7,37 @@ sudo apt install -y xpenguins
 echo "[*] Installing cmatrix..."
 sudo apt install -y cmatrix
 
-echo "[*] Launching xpenguins and cmatrix..."
-
-# Start penguins
+echo "[*] Launching xpenguins..."
 xpenguins >/dev/null 2>&1 &
 
-# Start cmatrix in a terminal if available
-if command -v gnome-terminal >/dev/null 2>&1; then
-  gnome-terminal -- bash -lc "cmatrix; exec bash" &
-elif command -v xterm >/dev/null 2>&1; then
-  xterm -e cmatrix &
-else
-  cmatrix &
-fi
 
 #########################################
-# FAKE RANSOMWARE WARNING
+# FUNCTION: Open terminal safely
 #########################################
 
+open_terminal() {
+    if command -v gnome-terminal >/dev/null 2>&1; then
+        gnome-terminal -- bash -c "$1; exec bash" &
+    elif command -v xterm >/dev/null 2>&1; then
+        xterm -e "$1" &
+    else
+        echo "[!] No GUI terminal found. Running in current shell."
+        eval "$1"
+    fi
+}
+
+#########################################
+# TERMINAL 1 — CMATRIX
+#########################################
+
+open_terminal "cmatrix"
+
+
+#########################################
+# TERMINAL 2 — WARNING + SHUTDOWN
+#########################################
+
+open_terminal '
 sleep 3
 clear
 
@@ -52,7 +65,6 @@ echo
 
 tput sgr0
 
-# Countdown
 for i in {30..1}; do
     echo -ne "System shutting down in $i seconds...\r"
     sleep 1
@@ -61,5 +73,7 @@ done
 echo
 echo "[!] Initiating shutdown..."
 
-# Real shutdown
 sudo shutdown -h now
+'
+
+echo "[*] Malware simulation launched."
